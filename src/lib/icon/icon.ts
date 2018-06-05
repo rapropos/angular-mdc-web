@@ -1,14 +1,13 @@
 import {
   Attribute,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   Input,
-  OnChanges,
   OnInit,
   Renderer2,
-  SimpleChanges,
-  ViewEncapsulation,
+  ViewEncapsulation
 } from '@angular/core';
 import { toBoolean } from '@angular-mdc/web/common';
 
@@ -20,7 +19,7 @@ import { toBoolean } from '@angular-mdc/web/common';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MdcIcon implements OnChanges, OnInit {
+export class MdcIcon implements OnInit {
   private _defaultFontSetClass = 'material-icons';
   private _previousFontSetClass: string;
   private _previousFontIconClass: string;
@@ -31,6 +30,7 @@ export class MdcIcon implements OnChanges, OnInit {
   get fontSet(): string { return this._fontSet; }
   set fontSet(value: string) {
     this._fontSet = this._cleanupFontValue(value);
+    this._updateFontIconClasses();
   }
   protected _fontSet: string;
 
@@ -39,10 +39,16 @@ export class MdcIcon implements OnChanges, OnInit {
   get fontIcon(): string { return this._fontIcon; }
   set fontIcon(value: string) {
     this._fontIcon = value;
+    this._updateFontIconClasses();
   }
   protected _fontIcon: string;
 
-  @Input() fontSize: number | null;
+  @Input()
+  get fontSize(): number { return this._fontSize; }
+  set fontSize(value: number) {
+    this.setFontSize(value);
+  }
+  protected _fontSize: number;
 
   @Input()
   get leading(): boolean { return this._leading; }
@@ -68,6 +74,7 @@ export class MdcIcon implements OnChanges, OnInit {
   public foundation: any;
 
   constructor(
+    protected _changeDetectorRef: ChangeDetectorRef,
     protected _renderer: Renderer2,
     public elementRef: ElementRef,
     @Attribute('aria-hidden') protected ariaHidden: string) {
@@ -77,17 +84,11 @@ export class MdcIcon implements OnChanges, OnInit {
     }
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    const fontSize = changes['fontSize'] ? changes['fontSize'].currentValue : this.fontSize;
-
-    this._updateFontIconClasses(fontSize);
-  }
-
   ngOnInit() {
-    this._updateFontIconClasses(this.fontSize);
+    this._updateFontIconClasses();
   }
 
-  private _updateFontIconClasses(fontSize: number | null): void {
+  private _updateFontIconClasses(): void {
     const el: HTMLElement = this._getHostElement();
 
     const fontSetClass = this.fontSet ? this.fontSet : this._getDefaultFontSetClass();
@@ -114,14 +115,14 @@ export class MdcIcon implements OnChanges, OnInit {
       this._previousFontIconClass = this.fontIcon;
     }
 
-    if (fontSize !== this._previousFontSize) {
+    if (this.fontSize !== this._previousFontSize) {
       if (this._previousFontSize) {
-        this._renderer.removeStyle(el, `font-size: ${fontSize}px`);
+        this._renderer.removeStyle(el, `font-size: ${this.fontSize}px`);
       }
-      if (fontSize) {
-        this._renderer.setStyle(el, 'font-size', `${fontSize}px`);
+      if (this.fontSize) {
+        this._renderer.setStyle(el, 'font-size', `${this.fontSize}px`);
       }
-      this._previousFontSize = fontSize;
+      this._previousFontSize = this.fontSize;
     }
   }
 
@@ -151,8 +152,24 @@ export class MdcIcon implements OnChanges, OnInit {
     return this.trailing;
   }
 
+  setIcon(content: string): void {
+    this.fontIcon ? this.fontIcon = content : this._getHostElement().textContent = content;
+    this._changeDetectorRef.markForCheck();
+  }
+
+  getIcon(): string {
+    return this.fontIcon ? this.fontIcon : this._getHostElement().textContent;
+  }
+
+  setFontSize(value: number): void {
+    this._fontSize = value;
+    this._updateFontIconClasses();
+    this._changeDetectorRef.markForCheck();
+  }
+
   setClickable(clickable: boolean): void {
     this._clickable = toBoolean(clickable);
+
     if (this.clickable) {
       this._renderer.setAttribute(this._getHostElement(), 'tabindex', '0');
       this._renderer.addClass(this._getHostElement(), 'ng-mdc-icon--clickable');
