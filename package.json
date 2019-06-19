@@ -22,7 +22,8 @@
     "lint:css": "stylelint \"packages/material-components-web/**/*.scss\"",
     "fix:css": "stylelint --fix \"packages/material-components-web/**/*.scss\"",
     "test": "karma start --single-run",
-    "test:watch": "karma start --auto-watch"
+    "test:watch": "karma start --auto-watch",
+    "prepare": "yarn build:release"
   },
   "dependencies": {
     "@angular/common": "^7.2.12",
