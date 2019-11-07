@@ -70,6 +70,34 @@ describe('MdcSlider', () => {
       fixture.detectChanges();
       expect(sliderInstance.max).toBe(200);
     });
+
+    it('#should set minmax inside default range', () => {
+        const defaultMin = sliderInstance.min;
+        const defaultMax = sliderInstance.max;
+        const newMin = defaultMin + 1;
+        const newMax = defaultMax - 1;
+        sliderInstance.minmax = [newMin, newMax];
+        expect(sliderInstance.min).toBe(newMin);
+        expect(sliderInstance.max).toBe(newMax);
+    });
+
+    it('#should set minmax above default max', () => {
+        const defaultMax = sliderInstance.max;
+        const newMin = defaultMax + 10;
+        const newMax = newMin + 10;
+        sliderInstance.minmax = [newMin, newMax];
+        expect(sliderInstance.min).toBe(newMin);
+        expect(sliderInstance.max).toBe(newMax);
+    });
+
+    it('#should set minmax below default min', () => {
+        const defaultMin = sliderInstance.min;
+        const newMax = defaultMin - 10;
+        const newMin = newMax - 10;
+        sliderInstance.minmax = [newMin, newMax];
+        expect(sliderInstance.min).toBe(newMin);
+        expect(sliderInstance.max).toBe(newMax);
+    });
   });
 
   describe('basic behaviors', () => {

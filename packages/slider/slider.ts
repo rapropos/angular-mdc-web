@@ -132,6 +132,34 @@ export class MdcSlider extends MDCComponent<MDCSliderFoundation>
   private _max: number = 100;
 
   @Input()
+  get minmax(): [number, number] { return [this._min, this._max]; }
+  set minmax(mm: [number, number]) {
+      const newmin = coerceNumberProperty(mm[0], this._min);
+      const newmax = coerceNumberProperty(mm[1], this._max);
+      if (newmax < newmin) { return; }
+
+      const updateFoundation = this._foundation && this._initialized;
+      let dirty = false;
+      if (newmin !== this._min) {
+          this._min = newmin;
+          if (updateFoundation) {
+              this._foundation.setMin(this._min);
+              dirty = true;
+          }
+      }
+      if (newmax !== this._max) {
+          this._max = newmax;
+          if (updateFoundation) {
+              this._foundation.setMax(this._max);
+              dirty = true;
+          }
+      }
+      if (dirty) {
+          this._changeDetectorRef.markForCheck();
+      }
+  }
+
+  @Input()
   get step(): number { return this._step; }
   set step(value: number) {
     const step = coerceNumberProperty(value, this._step);
